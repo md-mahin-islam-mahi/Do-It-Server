@@ -11,21 +11,24 @@ app.get('/', (req, res) => {
     res.send('Server is running');
 })
 
-
+// MongoDB Database
 const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_PASSWORD}@cluster0.4lqljgn.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run() {
     try {
+        // Database connection
         const taskListDatabase = client.db('DoItList').collection('taskList');
 
+        // post method
         app.post('/addTask', async (req, res) => {
             const taskList = req.body;
             const result = await taskListDatabase.insertOne(taskList);
             res.send(result);
         });
 
+        // get method
         app.get('/tasks/:email', async (req, res) => {
             const email = req.params.email;
             const query = { userEmail: email };
@@ -33,6 +36,7 @@ async function run() {
             res.send(tasks);
         });
 
+        // put method
         app.put('/finished-task/:id', async (req, res) => {
             const id = req.params.id;
             const query = { _id: ObjectId(id) };
