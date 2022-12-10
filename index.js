@@ -12,19 +12,46 @@ app.get('/', (req, res) => {
 })
 
 
-const { MongoClient, ServerApiVersion } = require('mongodb');
+const { MongoClient, ServerApiVersion, ObjectId } = require('mongodb');
 const uri = `mongodb+srv://${process.env.USER_NAME}:${process.env.USER_PASSWORD}@cluster0.4lqljgn.mongodb.net/?retryWrites=true&w=majority`;
 const client = new MongoClient(uri, { useNewUrlParser: true, useUnifiedTopology: true, serverApi: ServerApiVersion.v1 });
 
 async function run() {
-    try{
+    try {
         const taskListDatabase = client.db('DoItList').collection('taskList');
 
-        app.post('/addTask', (req, res) => {
+        app.post('/addTask', async (req, res) => {
             const taskList = req.body;
-            const result = taskListDatabase.insertOne(taskList);
+            const result = await taskListDatabase.insertOne(taskList);
             res.send(result);
-        })
+        });
+
+        app.get('/tasks', async (req, res) => {
+            const query = {};
+            const tasks = await taskListDatabase.find(query).toArray();
+            res.send(tasks);
+        });
+
+        app.delete('/delete-task/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const result = await taskListDatabase.deleteOne(query);
+            res.send(result);
+        });
+
+        app.put('/finished-task/:id', async (req, res) => {
+            const id = req.params.id;
+            const query = { _id: ObjectId(id) };
+            const options = { upsert: true };
+            const updateDock = {
+                $set: {
+                    finished: true
+                }
+            }
+            const result = await taskListDatabase.updateOne(query, updateDock, options);
+            res.send(result);
+
+        });
     }
     finally {
 
