@@ -26,17 +26,11 @@ async function run() {
             res.send(result);
         });
 
-        app.get('/tasks', async (req, res) => {
-            const query = {};
+        app.get('/tasks/:email', async (req, res) => {
+            const email = req.params.email;
+            const query = { userEmail: email };
             const tasks = await taskListDatabase.find(query).toArray();
             res.send(tasks);
-        });
-
-        app.delete('/delete-task/:id', async (req, res) => {
-            const id = req.params.id;
-            const query = { _id: ObjectId(id) };
-            const result = await taskListDatabase.deleteOne(query);
-            res.send(result);
         });
 
         app.put('/finished-task/:id', async (req, res) => {
